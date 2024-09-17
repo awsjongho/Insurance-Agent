@@ -44,7 +44,7 @@ def open_claims():
     return open_claim_ids
 
 def generate_reminder_id(length):
-    print("Generate Reminder ID")
+    print("재안내 ID 생성")
     # Define the characters that can be used in the random string
     characters = string.ascii_letters + string.digits
     
@@ -54,10 +54,10 @@ def generate_reminder_id(length):
     return random_string
 
 def send_reminder(claim_id, pending_documents):
-    print("Send Reminder")
+    print("재안내 전송중")
 
-    subject = "Insurance Claim ID: " + str(claim_id)
-    message = "Here is a reminder to upload your pending documents: " + str(pending_documents)
+    subject = "보험 클레임ID: " + str(claim_id)
+    message = "제출이 지연된 문서에 대한 안내입니다: " + str(pending_documents)
     print("Email Message: " + message)
 
     sns_client.publish(
@@ -68,13 +68,13 @@ def send_reminder(claim_id, pending_documents):
     
     # Generate a random string of length 7 (to match the format '12a3456')
     reminder_id = generate_reminder_id(7)
-    print("Reminder ID: " + str(reminder_id))
+    print("안내 ID: " + str(reminder_id))
 
     return reminder_id
 
 ## Agent runtime Retrieve API with boto3 client ##
 def notify_pending_documents(event):
-    print("Notify Pending Documents")
+    print("제출 지연문서 안내")
     
     # Extracting claimId value from event parameters
     claim_id = get_named_parameter(event, 'claimId')
@@ -89,7 +89,7 @@ def notify_pending_documents(event):
     if not claim_id:
         return {
             'statusCode': 400,
-            'response': 'Missing claimId parameter'
+            'response': '클레임Id 파라미터 누락'
         }
 
     try:
@@ -113,7 +113,7 @@ def notify_pending_documents(event):
             # pendingDocuments is a list
             pending_documents_response = pending_documents_attr.get('L', [])
 
-        print(f"ddb pending documents extract: {pending_documents_response}")
+        print(f"Danamo DB 지연문서 항목 추출: {pending_documents_response}")
 
         # Transform the list of dictionaries to a list of strings if it's in 'L' format
         pending_documents = [doc['S'] for doc in pending_documents_response if isinstance(doc, dict) and 'S' in doc]
@@ -129,7 +129,7 @@ def notify_pending_documents(event):
 
     # Generate a random string of length 7 (to match the format '12a3456')
     reminder_tracking_id = send_reminder(claim_id, formatted_pending_documents)
-    print("Reminder tracking ID = " + str(reminder_tracking_id))
+    print("안내 트래킹 ID = " + str(reminder_tracking_id))
 
     return {
         'response': {
@@ -150,7 +150,7 @@ def lambda_handler(event, context):
         body = notify_pending_documents(event)
     else:
         response_code = 400
-        body = {"{}::{} is not a valid api, try another one.".format(action_group, api_path)}
+        body = {"{}::{}는 유효한 api가 아닙니다. 다른 api를 사용해 주세요.".format(action_group, api_path)}
     
     response_body = {
         'application/json': {

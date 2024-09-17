@@ -38,10 +38,10 @@ def generate_upload_id(length):
     return random_string
 
 def send_evidence_url(claim_id):
-    print("Send Evidence URL")
+    print("증거문서 URL 전송")
 
-    subject = "Gathering Evidence for Claim ID: " + claim_id
-    message = "Please upload your claim evidence in the AnyCompany Insurance Portal: " + url
+    subject = "클레임ID에 대한 증거문서 취합: " + claim_id
+    message = "AnyCompany Insurance 포털에 증거 문서를 업로드 해 주세요: " + url
 
     sns_client.publish(
         TopicArn=sns_topic_arn,
@@ -50,7 +50,7 @@ def send_evidence_url(claim_id):
     )
 
 def gather_evidence(event):
-    print("Gathering Evidence")
+    print("증거문서 취합중")
 
     # Extracting claimId value from event parameters
     claim_id = get_named_parameter(event, 'claimId')
@@ -86,7 +86,7 @@ def lambda_handler(event, context):
         body = gather_evidence(event)
     else:
         response_code = 400
-        body = {"{}::{} is not a valid api, try another one.".format(action_group, api_path)}
+        body = {"{}::{}는 유효한 api가 아닙니다. 다른 api를 사용해 주세요".format(action_group, api_path)}
 
     response_body = {
         'application/json': {
