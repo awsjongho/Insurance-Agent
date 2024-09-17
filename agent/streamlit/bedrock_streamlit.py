@@ -127,7 +127,7 @@ kb_name_list = list(kb_name_to_id.keys())
 
 # Initialize session state for session enabled and session ID
 if 'session_enabled' not in st.session_state:
-    st.session_state['session_enabled'] = False
+    st.session_state['session_enabled'] = True
 if 'session_id' not in st.session_state:
     st.session_state['session_id'] = None
 if 'first_input_processed' not in st.session_state:
@@ -138,61 +138,65 @@ if 'kb_id' not in st.session_state:
     st.session_state['kb_id'] = None
 if 'data_source_id' not in st.session_state:
     st.session_state['data_source_id'] = None
+# session_id가 없으면 세션 활성화 시 기본 세션 ID 생성
+if st.session_state["session_enabled"] and st.session_state["session_id"] is None:
+    st.session_state["session_id"] = generate_session_id()  # 세션 ID 자동 생성
 
 # Streamlit App Layout
 st.title('Bedrock Insurance Agent')
-st.subheader('Powered by coffee and Amazon Bedrock')
-st.info("**PURPOSE:** Allow users to select between Agents and Knowledge Bases for Amazon Bedrock for their task automation and intelligent search use cases. ")
+st.subheader('Powered by jongho  and Amazon Bedrock')
+st.info("**목적: ** 사용자가 업무 자동화 및 지능형 검색 사용을 위해 Amazon Bedrock용Agent와Knowledge Base 중에서 선택할 수 있습니다. ")
 idp_logo = "bedrock_logo.png"
 st.sidebar.image(idp_logo, width=300, output_format='PNG')
 
 # User choice: Agent or Knowledge Base
-st.sidebar.subheader('1. Select Service Type')
-use_agent = st.sidebar.radio("Mode of Operation", ["Agent", "Knowledge Base"], on_change=reset_session)
+st.sidebar.subheader('1. 서비스 타입을 선택하세요')
+use_agent = st.sidebar.radio("작동 모드", ["Agent", "Knowledge Base"], on_change=reset_session)
 
 # Dropdowns for selecting agent name, agent alias ID, knowledge base ID, and model ID (conditionally displayed)
 if use_agent == "Agent":
-    st.sidebar.subheader('2. Choose Your Agent')
-    agent_name = st.sidebar.selectbox("Agent Name", agent_name_list)
+    st.sidebar.subheader('2. Agent를 선택하세요')
+    agent_name = st.sidebar.selectbox("Agent 명", agent_name_list)
     agent_id = agent_name_to_id[agent_name]
 
     # Fetch agent aliases based on selected agent ID
     agent_alias_summaries = fetch_agent_aliases(agent_id) if agent_id else []
     agent_alias_id_list = [alias['agentAliasId'] for alias in agent_alias_summaries]
-    agent_alias_id = st.sidebar.selectbox("Agent Alias ID", agent_alias_id_list) if agent_alias_id_list else st.sidebar.selectbox("Agent Alias ID", [])
+    agent_alias_id = st.sidebar.selectbox("Agent 별칭ID", agent_alias_id_list) if agent_alias_id_list else st.sidebar.selectbox("Agent Alias ID", [])
 
 else:
-    st.sidebar.subheader('2. Choose Your Knowledge Base')
+    st.sidebar.subheader('2. Knowledge Base를 선택하세요')
     kb_name_to_id = {kb['name']: kb['knowledgeBaseId'] for kb in knowledge_base_summaries}
     kb_name_list = list(kb_name_to_id.keys())
-    kb_name = st.sidebar.selectbox("Knowledge Base Name", kb_name_list)
+    kb_name = st.sidebar.selectbox("Knowledge Base 명", kb_name_list)
     kb_id = kb_name_to_id[kb_name]
     st.session_state['kb_id'] = kb_id
 
-st.sidebar.subheader('3. Select Model ID')
-model_id_list = ["anthropic.claude-3-sonnet", "anthropic.claude-3-haiku", "anthropic.claude-v2:1"]
+st.sidebar.subheader('3. 모델ID를 선택하세요')
+model_id_list = ["anthropic.claude-3.5-sonnet","anthropic.claude-3-sonnet", "anthropic.claude-3-haiku", "anthropic.claude-v2:1"]
 model_id_map = {
+    "anthropic.claude-3.5-sonnet": "anthropic.claude-3-5-sonnet-20240620-v1:0",
     "anthropic.claude-3-sonnet": "anthropic.claude-3-sonnet-20240229-v1:0",
     "anthropic.claude-3-haiku": "anthropic.claude-3-haiku-20240307-v1:0",
     "anthropic.claude-v2:1": "anthropic.claude-v2:1"
 }
 
-model_selection = st.sidebar.selectbox("Model ID", model_id_list)
+model_selection = st.sidebar.selectbox("모델ID", model_id_list)
 model_id = model_id_map[model_selection]
 model_arn = f"arn:aws:bedrock:{region}::foundation-model/{model_id}"
 
 # Enable Session checkbox, only enabled after the first input is processed
-st.sidebar.subheader('4. Session Setting')
-st.sidebar.radio("Enable Session", [False, True], key="session_enabled")
+st.sidebar.subheader('4. Session 설정')
+st.sidebar.radio("Session 활성", [False, True], key="session_enabled")
 
 # Optional: Select filter attribute
-st.sidebar.subheader('5. (Optional) Filter Setting')
+st.sidebar.subheader('5. (선택사항) 필터 설정')
 filter_attributes = ["None", "external", "internal"]
-filter_attribute = st.sidebar.selectbox("Filter Attribute", filter_attributes)
+filter_attribute = st.sidebar.selectbox("필터 속성", filter_attributes)
 
 # Streamlit File Preview Helper Methods
 def show_csv(uploaded_file):
-    st.subheader("CSV Preview")
+    st.subheader("CSV 미리보기")
     df = pd.read_csv(uploaded_file)
     st.write(df)
 
@@ -218,7 +222,7 @@ def convert_docx_to_html(docx_content):
         return None
 
 def show_doc(uploaded_file):
-    st.subheader("Document Preview")
+    st.subheader("Doc  미리보기")
     text = extract_text_from_docx(uploaded_file)
     if text:
         st.write(text)
@@ -226,7 +230,7 @@ def show_doc(uploaded_file):
         st.error("Uploaded file is not a valid Word document.")
 
 def show_docx(uploaded_file):
-    st.subheader("Document Preview")
+    st.subheader("Doc 미리보기")
     file_name = uploaded_file.name.lower()
     if 'docx' in file_name:
         docx_content = uploaded_file.getvalue()
@@ -239,29 +243,29 @@ def show_docx(uploaded_file):
 def show_excel(uploaded_file):
     try:
         df = pd.read_excel(uploaded_file)
-        st.subheader("Excel Preview")
+        st.subheader("Excel 미리보기")
         st.write(df)
     except Exception as e:
         st.error(f"Error reading Excel file: {e}")
 
 def show_html(uploaded_file):
-    st.subheader("HTML Preview")
+    st.subheader("HTML 미리보기")
     html_content = uploaded_file.getvalue().decode("utf-8")
     st.markdown(html_content, unsafe_allow_html=True)
 
 def show_md(uploaded_file):
-    st.subheader("Markdown Preview")
+    st.subheader("Markdown 미리보기")
     md_content = uploaded_file.getvalue().decode("utf-8")
     st.markdown(md_content)
 
 def show_pdf(uploaded_file):
-    st.subheader("PDF Preview")
+    st.subheader("PDF 미리보기")
     pdf_display = f'<iframe src="data:application/pdf;base64,{base64.b64encode(uploaded_file.read()).decode("utf-8")}" width="100%" height="500"></iframe>'
     st.markdown(pdf_display, unsafe_allow_html=True)
 
 def show_text(uploaded_file):
     text = uploaded_file.getvalue().decode("utf-8")
-    st.subheader("Text Preview")
+    st.subheader("Text 미리보기")
     st.write(text)
 
 def process_uploaded_file(uploaded_file):
@@ -312,12 +316,12 @@ def process_uploaded_file(uploaded_file):
 
 # Agents and Knowledge Bases API Helper Functions
 def bedrock_query_knowledge_base(query):
-    print(f"Knowledge Base query: {query}")
+    print(f"Knowledge Base 짊문: {query}")
 
-    prompt_template = """\n\nHuman: You will be acting as a helpful customer service representative named Ava (short for Amazon Virtual Assistant) working for AnyCompany. Provide a summarized answer using only 1 or 2 sentences. 
-    Here is the relevant information in numbered order from our knowledge base: $search_results$
-    Current time: $current_time$
-    User query: $query$\n\nAssistant: """
+    prompt_template = """\n\nHuman: AnyCompany에서 근무하는 Ava (Amazon Virtual Assistant) 라는 친절한 고객 서비스 담당자로 활동하게 됩니다.한두 문장만 사용하여 요약된 답변을 제공하십시오.. 
+    다음은 당사의 knowledge base에서 검색된 결과 입니다: $search_results$
+    시간: $current_time$
+    사용자 질문: $query$\n\nAssistant: """
 
     payload = {
         "input": {
@@ -433,9 +437,9 @@ def invoke_agent(query):
     print(f"Agent query: {query}")
 
     # Generate new session ID if session is not enabled or session ID is None
-    if not st.session_state["session_enabled"]:
+    if not st.session_state["session_enabled"] and st.session_state["session_id"] is None:
         st.session_state["session_id"] = generate_session_id()
-    
+
     try:    
         # Build the parameters for the invoke_agent call
         params = {
@@ -443,7 +447,13 @@ def invoke_agent(query):
             'agentId': agent_id,
             'sessionId': st.session_state["session_id"],
             'inputText': query,
-            'enableTrace': True
+            'enableTrace': True,
+            'sessionState': {
+                "sessionAttributes": {
+                                        "maxRetrievalResults": "20",
+                                        "overrideSearchType": "HYBRID"
+                }
+            }
         }
         
         # Invoke the agent
@@ -468,12 +478,12 @@ def main():
         st.session_state["uploaded_files"] = []
 
     if use_agent == "Agent":
-        st.subheader("Agents for Amazon Bedrock - Prompt Input")
+        st.subheader("Amazon Bedrock: Agent  - 질문 입력")
     else:
-        st.subheader("Knowledge Bases for Amazon Bedrock - Prompt Input")
+        st.subheader("Amazon Bedrock: Knowledge Base - 질문입력")
         selected_kb_id = kb_id
     
-    query = st.text_input("User Input", value="", placeholder="What can the agent help you with?", label_visibility="visible")
+    query = st.text_input("사용자 입력", value="", placeholder="무엇을 도와 드릴까요?", label_visibility="visible")
 
     response = None
     if st.session_state.get("previous_query") != query and query != "":
@@ -486,9 +496,9 @@ def main():
             response = bedrock_query_knowledge_base(query)
 
     if response:
-        st.write("Response:", response)
+        st.write("응답:", response)
 
-    st.subheader("Knowledge Bases for Amazon Bedrock - File Upload")
+    st.subheader("Amazon Bedrock: Knowledge Base - 파일 업로드")
 
     if use_agent == "Agent":
         try:
@@ -496,7 +506,7 @@ def main():
             kb_ids = [kb['knowledgeBaseId'] for kb in knowledge_bases]
             kb_options = [fetch_knowledge_base_name(kb_id) for kb_id in kb_ids]
 
-            selected_kb_name = st.selectbox("Select Knowledge Base", options=kb_options)
+            selected_kb_name = st.selectbox("Knowledge Base 선택", options=kb_options)
             selected_kb_id = kb_ids[kb_options.index(selected_kb_name)]
 
         except Exception as e:
@@ -505,14 +515,14 @@ def main():
     # Fetch data sources and their IDs and names
     data_sources = fetch_data_sources(selected_kb_id)
     ds_options = [ds['name'] for ds in data_sources]
-    selected_ds_name = st.selectbox("Select Data Source", options=ds_options)
+    selected_ds_name = st.selectbox("데이터 소스 선택", options=ds_options)
     selected_ds_id = next(ds['id'] for ds in data_sources if ds['name'] == selected_ds_name)
     
     st.session_state['kb_id'] = selected_kb_id
     st.session_state['data_source_id'] = selected_ds_id
     s3_configuration = fetch_data_source_s3_configuration(selected_ds_id, selected_kb_id)
 
-    uploaded_files = st.file_uploader("Upload Document", type=["csv", "doc", "docx", "htm", "html", "md", "pdf", "txt", "xls", "xlsx"], accept_multiple_files=True)
+    uploaded_files = st.file_uploader("문서 업로드", type=["csv", "doc", "docx", "htm", "html", "md", "pdf", "txt", "xls", "xlsx"], accept_multiple_files=True)
 
     if uploaded_files:
         for uploaded_file in uploaded_files:
