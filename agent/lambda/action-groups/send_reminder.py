@@ -57,7 +57,7 @@ def send_reminder(claim_id, pending_documents):
     print("재안내 전송중")
 
     subject = "보험 클레임ID: " + str(claim_id)
-    message = "제출 지연된 서류에 대한 안내입니다: " + str(pending_documents)
+    message = "지연된 서류 제출에 대한 안내입니다: " + str(pending_documents)
     print("Email Message: " + message)
 
     sns_client.publish(
