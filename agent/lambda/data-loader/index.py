@@ -45,10 +45,10 @@ def lambda_handler(event, context):
                     EXISTING_CLAIMS_TABLE_NAME: items
                 }
             )
-            logger.info("Batch write response: %s", json.dumps(response))
+            logger.info("배치 기록 응답: %s", json.dumps(response))
             cfnresponse.send(event, context, cfnresponse.SUCCESS, responseData={})
         except Exception as e:
-            logger.error("Failed to load data into DynamoDB table: %s", str(e))
+            logger.error("DynamoDB 테이블 적재 오류: %s", str(e))
             cfnresponse.send(event, context, cfnresponse.FAILED, responseData={"Error": str(e)})
 
     elif request_type == 'Delete':
