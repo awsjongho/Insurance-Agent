@@ -41,7 +41,7 @@ def send_evidence_url(claim_id):
     print("증거문서 URL 전송")
 
     subject = "클레임ID에 대한 증거문서 취합: " + claim_id
-    message = "AnyCompany Insurance 포털에 증거 문서를 업로드 해 주세요: " + url
+    message = "AnyCompany Insurance 포털에 클레임 증거 서류를 업로드 해 주세요: " + url
 
     sns_client.publish(
         TopicArn=sns_topic_arn,
