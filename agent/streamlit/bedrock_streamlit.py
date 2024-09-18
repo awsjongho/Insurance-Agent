@@ -450,9 +450,11 @@ def invoke_agent(query):
             'enableTrace': True,
             'sessionState': {
                 "sessionAttributes": {
-                                      "maxRetrievalResults": "30",
-                                      "overrideSearchType": "HYBRID",
-                                      "queryReformulation": "ENABLED"
+                                        "maxRetrievalResults": "30",
+                                        "overrideSearchType": "HYBRID",
+                                        "queryReformulation": "ENABLED",
+                                        "maxObservations": "10",
+                                        "maxTokens": "4000"
                 }
             }
         }
