@@ -27,7 +27,7 @@ def get_named_property(event, name):
     return next(item for item in event['requestBody']['content']['application/json']['properties'] if item['name'] == name)['value']
 
 def generate_upload_id(length):
-    print("Generating Upload ID")
+    print("업로드ID 생성중")
 
     # Define the characters that can be used in the random string
     characters = string.ascii_letters + string.digits
@@ -40,8 +40,8 @@ def generate_upload_id(length):
 def send_evidence_url(claim_id):
     print("증거문서 URL 전송")
 
-    subject = "클레임ID에 대한 증거문서 취합: " + claim_id
-    message = "AnyCompany Insurance 포털에 클레임 증거 서류를 업로드 해 주세요: " + url
+    subject = "클레임 ID에 대한 증거자료 취합: " + claim_id
+    message = "AnyCompany Insurance 포털에 클레임 증거 자료를 업로드해 주세요: " + url
 
     sns_client.publish(
         TopicArn=sns_topic_arn,
@@ -50,7 +50,7 @@ def send_evidence_url(claim_id):
     )
 
 def gather_evidence(event):
-    print("증거문서 취합중")
+    print("증거자료 수집중")
 
     # Extracting claimId value from event parameters
     claim_id = get_named_parameter(event, 'claimId')
@@ -86,7 +86,7 @@ def lambda_handler(event, context):
         body = gather_evidence(event)
     else:
         response_code = 400
-        body = {"{}::{}는 유효한 api가 아닙니다. 다른 api를 사용해 주세요".format(action_group, api_path)}
+        body = {"{}::{}는 유효한 api가 아닙니다. 다른 api를 사용해 주세".format(action_group, api_path)}
 
     response_body = {
         'application/json': {
