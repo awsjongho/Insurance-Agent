@@ -1,6 +1,7 @@
 import os
 import io
 import re
+
 import json
 import time
 import boto3
@@ -22,7 +23,7 @@ sns_client = boto3.client('sns')
 url = os.environ['CUSTOMER_WEBSITE_URL']
 
 def claim_generator():
-    print("Generating Claim ID")
+    print("클레임ID 생성중")
 
     # Generate random characters and digits
     digits = ''.join(random.choice(string.digits) for _ in range(4))  # Generating 4 random digits
@@ -34,10 +35,10 @@ def claim_generator():
     return pattern
 
 def collect_documents(claim_id):
-    print("Collecting Claim Documents")
+    print("Collecting Claim 문서 취합")
 
-    subject = "신규 클레임ID: " + claim_id
-    message = "AnyCompany Insurance 포털에 클레임 증거 서류 또는 필요 서류를 업로드해 주세요: " + url
+    subject = "신구 클레임ID: " + claim_id
+    message = "AnyCompany Insurance 포털에 클레임 증거문서 또는 제출자료를 업로드해 주세요: " + url
 
     sns_client.publish(
         TopicArn=sns_topic_arn,
@@ -46,16 +47,16 @@ def collect_documents(claim_id):
     )
 
 def create_claim(event):
-    print("Creating Claim")
+    print("클레임 생성")
 
     # TODO: Claim creation logic
     generated_claim = claim_generator()
 
     # Update Excel data as needed (for example, add a new row with a new claim)
-    new_claim_data = {'claimId': generated_claim, 'policyId': 'MOT1234687', 'status': 'Open', 'pendingDocuments': ['운전면허증', '차량등록증', '증거자료']}  # Update column names and values
+    new_claim_data = {'claimId': generated_claim, 'policyId': '123456789', 'status': 'Open', 'pendingDocuments': ['Drivers License', 'Registration', 'Evidence']}  # Update column names and values
 
     # Update DynamoDB
-    print("Updating DynamoDB")
+    print("DynamoDB 업데이트")
 
     # Convert JSON document to DynamoDB format
     dynamodb_item = json.loads(json.dumps(new_claim_data), parse_float=decimal.Decimal)
@@ -80,7 +81,7 @@ def lambda_handler(event, context):
         body = create_claim(event)
     else:
         response_code = 400
-        body = {"{}::{} is not a valid api, try another one.".format(action_group, api_path)}
+        body = {"{}::{} 는 유효한 api가 아닙니다. 다른 api를 사용해 주세요".format(action_group, api_path)}
 
     response_body = {
         'application/json': {
