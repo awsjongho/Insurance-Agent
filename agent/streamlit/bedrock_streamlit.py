@@ -339,7 +339,7 @@ def bedrock_query_knowledge_base(query):
                 "modelArn": model_arn,
                 "retrievalConfiguration": {
                     "vectorSearchConfiguration": {
-                        "numberOfResults": 5,
+                        "numberOfResults": 10,
                     }
                 }
             }
@@ -350,7 +350,7 @@ def bedrock_query_knowledge_base(query):
         print(f"filter_attribute: {filter_attribute}")
         payload["retrieveAndGenerateConfiguration"]["knowledgeBaseConfiguration"]["retrievalConfiguration"] = {
             "vectorSearchConfiguration": {
-                "numberOfResults": 5,
+                "numberOfResults": 10,
                 "filter": {
                     "equals": {
                         "key": "exposure",
@@ -453,7 +453,7 @@ def invoke_agent(query):
                                         "maxRetrievalResults": "30",
                                         "overrideSearchType": "HYBRID",
                                         "queryReformulation": "ENABLED",
-                                        "maxObservations": "10",
+                                        "maxObservations": "20",
                                         "maxTokens": "4000"
                 }
             }
